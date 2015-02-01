@@ -27,6 +27,9 @@ class OscManager {
   public void sendRenoiseNote(int note){
     ts = new ThreadedOscSend(oscP5, oscServer);
     ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
+    // Problem: Seems P5 `thread` only accepts methods that are deinfed in the
+    // main class (perhaps because it is doing some invokeMethod thing or whatever.
+    
     thread("executeOscSend");
   }
 

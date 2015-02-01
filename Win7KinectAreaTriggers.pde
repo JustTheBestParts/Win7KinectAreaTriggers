@@ -208,5 +208,18 @@ void stop() {
   super.exit();
 }
 
+//////// Hacky. Hideous coupling.  The cusom class is calling out to
+/////// a method here that calls a method on the custom class.
+//   FIXME
+
+  void executeOscSend() {
+    osc.executeOscSend();
+  }
+
+
+  /***************************************************************/
+  void executeMidiSend() {
+    midi.executeMidiSend(); 
+  }
 
 
