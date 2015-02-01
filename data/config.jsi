@@ -8,4 +8,4 @@ trackerThreshholdDelta: 20
 onOffDelay: 400
 midiChannel:1
 sendMIDI: true
-sendOSC: false
+sendOSC: true

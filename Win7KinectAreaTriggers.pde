@@ -13,9 +13,7 @@ PFont f = createFont("", 10);
 KinectTracker tracker;
 
 
-
-ThreadedMidiSend tms;
-
+MidiManager midi;
 OscManager osc;
 
 boolean sendOSC  = true;
@@ -61,8 +59,7 @@ void setup() {
   trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
   
   if (sendMIDI) {
-    setUpMidiOut(); 
-    tms = new ThreadedMidiSend(midiOut);
+     midi = new MidiManager(config);
   }
 }
 
@@ -118,17 +115,6 @@ void drawTargets(){
 
 
 
-/***************************************************************/
-void sendMidiNote(int note) {
-  tms.setMessageData("N," + note + ",127,5000");
-  thread("executeMidiSend"); 
-}
-
-
-/***************************************************************/
-void executeMidiSend() {
-  tms.run(); 
-}
 
 /***************************************************************/
 void draw() {
@@ -156,7 +142,7 @@ void zoneAlert(int zoneNumber, int zoneValue){
   }
 
   if (sendMIDI) {
-    sendMidiNote(zoneValue%40+(zoneNumber+1)*5);
+    midi.sendMidiNote(zoneValue%40+(zoneNumber+1)*5);
   }
 
   println("*************************************************************************");
@@ -217,7 +203,7 @@ void drawGrid(){
 
 /***************************************************************/
 void stop() {
-  if (sendMIDI) { midiOut = null; }
+  if (sendMIDI) { midi.clear(); }
   super.stop();
   super.exit();
 }
