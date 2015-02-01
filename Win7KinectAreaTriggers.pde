@@ -59,7 +59,7 @@ void setup() {
   trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
   
   if (sendMIDI) {
-     midi = new MidiManager(config);
+     midi = new MidiManager(this, config);
   }
 }
 
