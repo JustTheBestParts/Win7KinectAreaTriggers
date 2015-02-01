@@ -1,11 +1,5 @@
 import java.awt.*;
-import oscP5.*;
-import netP5.*;
 
-
-OscP5 oscP5;
-
-NetAddress oscServer;
 int depthThreshold = 790;
 
 Configgy config;
@@ -18,16 +12,11 @@ PFont f = createFont("", 10);
 
 KinectTracker tracker;
 
-OscMessage msgOn;
-OscMessage msgOff;
 
-int onOffDelay = 500;
 
-ThreadedOscSend ts;
 ThreadedMidiSend tms;
 
-int renoiseInstr = 0;
-int renoiseTrack = 1;
+OscManager osc;
 
 boolean sendOSC  = true;
 boolean sendMIDI = true;
@@ -53,6 +42,29 @@ int[] t1= { 0,    0,        defaultTargetW, defaultTargetH};
 int[] t2 = {0,    hd*4,     defaultTargetW, defaultTargetH};
 int[] t3 = {wd*4, 0,        defaultTargetW, defaultTargetH};
 int[] t4 = {wd*4, hd*4,     defaultTargetW, defaultTargetH};
+
+
+/***********************************************************/
+void setup() {
+  size(kinectFrameW*2,kinectFrameH);
+  tracker = new KinectTracker(this);
+  config = new Configgy("config.jsi");
+
+  sendMIDI = config.getBoolean("sendMIDI");
+  sendOSC = config.getBoolean("sendOSC");
+ 
+  if (sendOSC) {
+    osc = new OscManager(config);
+  }
+
+  trackerZoneSizeDelta = config.getInt("trackerZoneSizeDelta");
+  trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
+  
+  if (sendMIDI) {
+    setUpMidiOut(); 
+    tms = new ThreadedMidiSend(midiOut);
+  }
+}
 
 
 /***************************************************************/
@@ -103,41 +115,8 @@ void drawTargets(){
 }
 
 
-/***********************************************************/
-void setup() {
-  size(kinectFrameW*2,kinectFrameH);
-  tracker = new KinectTracker(this);
 
-  config = new Configgy("config.jsi");
 
-  sendOSC = config.getBoolean("sendOSC");
-  sendMIDI = config.getBoolean("sendMIDI");
-
-  if (sendOSC) {
-    oscP5 = new OscP5(this, config.getInt("oscListeningPort"));
-    oscServer = new NetAddress(config.getString("oscServerIP"), config.getInt("oscServerPort"));
-  }
-
-  trackerZoneSizeDelta = config.getInt("trackerZoneSizeDelta");
-  trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
-  onOffDelay = config.getInt("onOffDelay");
-  if (sendMIDI) {
-    setUpMidiOut(); 
-    tms = new ThreadedMidiSend(midiOut);
-  }
-}
-
-/***********************************************************/
-void sendRenoiseNote(int note){
-  ts = new ThreadedOscSend(oscP5, oscServer);
-  ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
-  thread("executeOscSend");
-}
-
-/***************************************************************/
-void executeOscSend() {
-  ts.run();
-}
 
 /***************************************************************/
 void sendMidiNote(int note) {
@@ -172,9 +151,8 @@ void draw() {
 
 /***************************************************************/
 void zoneAlert(int zoneNumber, int zoneValue){
-  renoiseInstr = zoneNumber;
   if (sendOSC) {
-    sendRenoiseNote(zoneValue%40+45);
+    osc.sendRenoiseNote(zoneValue%40+45);
   }
 
   if (sendMIDI) {

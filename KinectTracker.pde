@@ -50,8 +50,7 @@ class KinectTracker {
    **********************************************************************************************/
   PImage display() {
 
-    //println("Kinect display ...");
-
+    println("Kinect display ...");
 
     PImage newImage = createImage(kinectFrameW, kinectFrameH, RGB);
     // Get the raw depth as array of integers
