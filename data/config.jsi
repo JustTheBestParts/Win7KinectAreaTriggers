@@ -1,6 +1,6 @@
 devices:["LoopBe Internal MIDI", "01. Internal MIDI", "01. Internal Midi"]
 oscListeningPort: 7199
-oscServerPort: 8000
+oscServerPort: 8010
 oscServerIP: 127.0.0.1
 trackerDetectionZoneSize: 785
 trackerZoneSizeDelta: 5
