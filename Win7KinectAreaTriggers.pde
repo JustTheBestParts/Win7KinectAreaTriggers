@@ -31,7 +31,7 @@
 
    Target triggering is done by getting Kinect depth data, filtering for only
    those points that are within the bounding area, then rendering the results.
-   
+
    The sketch then sums the pixel values within each corner target, basically
    looking to see how far it deviates from pure black.  
 
@@ -44,9 +44,23 @@
  * promidi
 
 
-  A goal of the sketch is provide a useful example that is not too hard to change.
+ A goal of the sketch is provide a useful example that is not too hard to change.
 
-  
+There is a class that exists to hold methods meant to respond to changes in data.
+
+The idea is that a user with minimal coding experience need only add/edit specific
+functions that use predefined values.
+
+It's less than ideal because the class has other stuff in there.  
+
+Why not just skip the class and have just the methods?  Why not have just one method?
+
+Put the one method in a separate file, for just that method. No need for clever method
+finding.
+
+As it is, the Action methods still need to check for conditions.  The advantage to
+having multiple methods is to break things up.  Is that really any better?
+
 
 
 
@@ -61,10 +75,7 @@
  ******************************************************************* */
 
 
-// import java.awt.*; // Is this actually used?
 import java.lang.reflect.InvocationTargetException;
-
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 
@@ -87,7 +98,7 @@ OscManager osc;
 
 
 
-  KinectActionSet kas;
+KinectActionSet kas;
 boolean sendOSC  = true;
 boolean sendMIDI = true;
 
@@ -130,16 +141,16 @@ void setup() {
 
   sendMIDI = config.getBoolean("sendMIDI");
   sendOSC = config.getBoolean("sendOSC");
- 
+
   if (sendOSC) {
     osc = new OscManager(config);
   }
 
   trackerZoneSizeDelta = config.getInt("trackerZoneSizeDelta");
   trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
-  
+
   if (sendMIDI) {
-     midi = new MidiManager(this, config);
+    midi = new MidiManager(this, config);
   }
 
 
@@ -208,19 +219,21 @@ void draw() {
   drawTargets();
   checkTargets();
 
-for (int i = actionMethods.size() - 1; i >= 0; i--) {
-  Method m = actionMethods.get(i);
-  try {
-    // http://docs.oracle.com/javase/tutorial/reflect/member/methodInvocation.html
-   m.invoke(kas); 
-  } catch (IllegalAccessException iae ) {
-    println( "IllegalAccessException error: " + iae);
+  for (int i = actionMethods.size() - 1; i >= 0; i--) {
+    Method m = actionMethods.get(i);
+    try {
+      // http://docs.oracle.com/javase/tutorial/reflect/member/methodInvocation.html
+      m.invoke(kas); 
+    } catch (IllegalAccessException iae ) {
+      println( "IllegalAccessException error: " + iae);
 
-  } catch (InvocationTargetException ite) {
-    println("InvocationTargetException error: " + ite);
+    } catch (InvocationTargetException ite) {
+      println("InvocationTargetException error: " + ite);
+    }
   }
-}
-  
+
+  foo();
+
   image(tracker.flip, kinectFrameW+1, 0);
   drawGrid();
   println("Zone: " + tracker.getZone() + "; " ); 
