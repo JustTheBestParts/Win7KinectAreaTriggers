@@ -1,23 +1,19 @@
-
 /* *******************************************************************
 
    Sketch to demonstrate using Kinect data to trigger OSC messages.
 
    The right side of the window shows the raw B&W Kinect data.
 
-   The left side shows only what data fits withing a specified
-   bounding area.  
+   The left side shows only what has been detected as being withing 
+   a specified bounding area.
 
    The left side has a grid-like overlay defining target areas.
 
    When an object is within the bounding area, and within one of
-   the corner target areas, an OSC message is sent.
+   the corner target areas, some sort of action is triggered.
 
-   There is a custom Java class to allow creating the OSC messages
-   in a separate thread to keep the main sketch from slowing down.
-
-   Threading is used to alow sending of MIDI and OSC messsages
-   without interupting the behavior of the sketch.
+   There are custom classes that use threads to allow creating and
+   send OSC and MIDI message without bogging down the main sketch.
 
    There is a config file that defines settings for the OSC, MIDI, and
    the Kinect boundry region.
@@ -47,6 +43,10 @@
  * netP5
  * promidi
 
+
+  A goal of the sketch is provide a useful example that is not too hard to change.
+
+  
 
 
 
