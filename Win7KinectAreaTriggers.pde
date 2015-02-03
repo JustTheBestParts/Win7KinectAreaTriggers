@@ -63,7 +63,13 @@
  ******************************************************************* */
 
 
-import java.awt.*;
+import java.awt.*; // Is this actually used?
+import java.lang.reflect.InvocationTargetException;
+
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+
 
 int depthThreshold = 790;
 
@@ -81,6 +87,9 @@ KinectTracker tracker;
 MidiManager midi;
 OscManager osc;
 
+
+
+  KinectActionSet kas;
 boolean sendOSC  = true;
 boolean sendMIDI = true;
 
@@ -107,6 +116,8 @@ int[] t3 = {wd*4, 0,        defaultTargetW, defaultTargetH};
 int[] t4 = {wd*4, hd*4,     defaultTargetW, defaultTargetH};
 
 
+ArrayList<Method> actionMethods;
+
 /***********************************************************/
 void setup() {
   size(kinectFrameW*2,kinectFrameH);
@@ -126,6 +137,12 @@ void setup() {
   if (sendMIDI) {
      midi = new MidiManager(this, config);
   }
+
+
+
+  kas = new KinectActionSet();
+  actionMethods = kas.myActionMethods();
+
 }
 
 
@@ -178,9 +195,6 @@ void drawTargets(){
 
 
 
-
-
-
 /***************************************************************/
 void draw() {
   background(0);
@@ -188,7 +202,20 @@ void draw() {
   tracker.display();
 
   drawTargets();
-  checkTargets();
+  //checkTargets();
+
+for (int i = actionMethods.size() - 1; i >= 0; i--) {
+  Method m = actionMethods.get(i);
+  try {
+    // http://docs.oracle.com/javase/tutorial/reflect/member/methodInvocation.html
+   m.invoke(kas); 
+  } catch (IllegalAccessException iae ) {
+  
+  } catch (InvocationTargetException ite) {
+  }
+}
+  
+
   // TODO: REALLY hacky.  Need to find out why doing this before checking targets
   // triggers things even though the targets appear empty.
 
