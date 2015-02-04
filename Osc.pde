@@ -12,13 +12,11 @@ class OscManager {
 
   int onOffDelay = 500;
 
-  ThreadedOscSend ts;
-
   int renoiseInstr = 0;
   int renoiseTrack = 1;
 
-   OscManager(Configgy config ) {
-     println("Creating an OscManager!");
+  OscManager(Configgy config ) {
+    println("Creating an OscManager!");
     oscP5 = new OscP5(this, config.getInt("oscListeningPort"));
     oscServer = new NetAddress(config.getString("oscServerIP"), config.getInt("oscServerPort"));
     onOffDelay = config.getInt("onOffDelay");
@@ -27,9 +25,9 @@ class OscManager {
 
   public void sendRenoiseNote(int note){
     if (sendOSC) { 
-      ts = new ThreadedOscSend(oscP5, oscServer);
-      ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
-      new Thread(ts).start();
+      ThreadedOscSend _ts = new ThreadedOscSend(oscP5, oscServer);
+      _ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
+      new Thread(_ts).start();
     }
   }
 

@@ -46,20 +46,47 @@
 
  A goal of the sketch is provide a useful example that is not too hard to change.
 
- There is a class that exists to hold methods meant to respond to changes in data.
+There are several code files, each ideally focused on specific responsibilties.
 
- The idea is that a user with minimal coding experience need only add/edit specific
- functions that use predefined values.
+One file has only one method, the one called in `draw` to decide what to do
+on each update of the data.
 
- It's less than ideal because the class has other stuff in there.  
+Some helper methods have been created to reduce the need to write certain code.
 
- Why not just skip the class and have just the methods?  Why not have just one method?
+For example, `haveTriggeredZone1` handles the comparison of zoneSum1 and the
+triggering threshold. 
 
- Put the one method in a separate file, for just that method. No need for clever method
- finding.
+The upside is you get a weak sort of DSL.  The downside is yoou have a number of one-off
+methods that would be better handled with more general ones.
 
- As it is, the Action methods still need to check for conditions.  The advantage to
- having multiple methods is to break things up.  Is that really any better?
+When writing about the code for non-techies it would be worth pointing this out, that
+when you are creating your own code it can help to create your own DSL like thing to
+encapsulte small bits of logic, then when you compose your final handing code it is 
+easier to follow.
+
+Same goes for creating files.  On the one hand, using One Big File means you always know
+where to look.  However, looking for everything in a large and growing file can get
+tedious. It becomes hard to track things.  
+
+Proper code partitioning is non-trivial, so new coders hould not get to worked up over
+getting it Just So.  The real goal is to have working code that does what you expect.
+
+Code naming and organizing is important to the extent it serves those goals.
+
+It is similar to organizing paints or other tools.  Yur goal is the work of art, not
+an award for organization and neatness.  But we know that some amount of organization and
+neatness helps with the real goal, so we do not want to simply ignore that part.
+
+Same goes for OOP. It's a means to an end.   You want code that works, code you can 
+understand, code you can come back to a day or week or month later and still work with.
+
+You want to adopt practices that work well for you. If you are working with others you want
+something people can live with.
+
+
+As you code more you'll learn more about design, organization, etc.  You'll hear stuff
+from other people, some good some bad.  Keep an open mind, adapt as needed, but don't blindly
+follow what others do.  Code on purpose.
 
 
 
@@ -140,7 +167,7 @@ void setup() {
 
   sendMIDI = config.getBoolean("sendMIDI");
   sendOSC  = config.getBoolean("sendOSC");
-  
+
   osc  = new OscManager(config);
   midi = new MidiManager(this, config);
 
@@ -156,8 +183,9 @@ void draw() {
   tracker.update();
   tracker.display();
 
-  drawTargets();
   checkTargets();
+  drawTargets();
+
 
   handleEvents();
 
@@ -176,15 +204,18 @@ void draw() {
 int getRectColorSum( int[] coords, int shiftColorInt ) {
 
   int sum = 0;
+
   int x1 = coords[0];
   int y1 = coords[1];
   int tW = coords[2];
   int tH = coords[3]; 
+
   for(int x = x1;  x < (x1+tW); x++){
     for(int y = y1; y < (y1+tH); y++) {
-      sum += (pixels[y*width+x] >> shiftColorInt)  & 0xFF;
+      sum += (pixels[y*width+x] >> shiftColorInt) & 0xFF;
     }
   }
+
   return sum;
 }
 
@@ -196,18 +227,10 @@ void drawTarget(int[] coords, color c) {
 
 /***************************************************************/
 void drawTargets(){
-
-  // Top left 
   drawTarget(t1, col);
-
-  // Bottom left
   drawTarget(t2, col);
-
-  // Top right 
-  drawTarget( t3, col);
-
-  // Bottom right is   
-  drawTarget( t4, col);
+  drawTarget(t3, col);
+  drawTarget(t4, col);
 }
 
 /***************************************************************/
@@ -215,14 +238,17 @@ void checkTargets(){
   loadPixels();
   zoneSum1 = getRectColorSum(t1, shiftColorGreen);
   zoneSum2 = getRectColorSum(t2, shiftColorGreen);
-  zoneSum3 = getRectColorSum( t3, shiftColorGreen);
-  zoneSum4 = getRectColorSum( t4, shiftColorGreen);
+  zoneSum3 = getRectColorSum(t3, shiftColorGreen);
+  zoneSum4 = getRectColorSum(t4, shiftColorGreen);
 }
 
+
 /***************************************************************/
-boolean haveTriggeredZone1() {
-  return zoneSum4 > depthThreshold;
-}
+boolean haveTriggeredZone1() { return (zoneSum1 > depthThreshold); }
+boolean haveTriggeredZone2() { return (zoneSum2 > depthThreshold); }
+boolean haveTriggeredZone3() { return (zoneSum3 > depthThreshold); }
+boolean haveTriggeredZone4() { return (zoneSum4 > depthThreshold); }
+
 
 /***************************************************************/
 void keyPressed() {
