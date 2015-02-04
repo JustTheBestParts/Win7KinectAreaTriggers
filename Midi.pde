@@ -3,22 +3,21 @@
 //
 import promidi.*;
 
-MidiIO midiIO;
-MidiOut midiOut;
-
-MidiOut controllerMidiOut;
-Note note;
-
 class MidiManager {
+  MidiIO midiIO;
+  MidiOut midiOut;
 
-  ThreadedMidiSend tms;
+  MidiOut controllerMidiOut;
+  Note note;
+
+
+  boolean sendMIDI = true;
 
   /***************************************************************/
   MidiManager(PApplet owner, Configgy config) {
-    setUpMidiOut(owner); 
-    tms = new ThreadedMidiSend(midiOut);
+    setUpMidiOut(owner);
+    sendMIDI = config.getBoolean("sendMIDI"); 
   }
-
 
   /***************************************************************/
   void setUpMidiOut(PApplet owner) {
@@ -38,15 +37,16 @@ class MidiManager {
     }
   }
 
-
   /***************************************************************/
   void sendMidiNote(int note) {
-    tms.setMessageData("N," + note + ",127,5000");
-     new Thread( tms ).start();
+    if (sendMIDI ) {
+      ThreadedMidiSend _tms = new ThreadedMidiSend(midiOut);
+      _tms.setMessageData("N," + note + ",127,5000");
+      new Thread( _tms ).start();
+      // Need to watch how this effects memory usage.
+      // _tms should be destroyed when it all falls out of scope. 
+    }
   }
-
-
-
 
   /***************************************************************/
   void clear() {
@@ -57,22 +57,22 @@ class MidiManager {
 
 /*
 
-Something to note:  First there was ThreadedSend.java (which was then renamed to
-ThreadedOscSend.java.  It is a Java class.
+   Something to note:  First there was ThreadedSend.java (which was then renamed to
+   ThreadedOscSend.java.  It is a Java class.
 
-It was copied and modified to make ThreadedMidiSend.pde.
+   It was copied and modified to make ThreadedMidiSend.pde.
 
-Basically the same sort of thing, but it has a pde extension.
+   Basically the same sort of thing, but it has a pde extension.
 
-Still, all works. Why?
+   Still, all works. Why?
 
-Coincidence.
+   Coincidence.
 
-Changing the extension to java breaks the code because it is using `split(s,s)`
+   Changing the extension to java breaks the code because it is using `split(s,s)`
 
-This is a P5 thing, not available in Java.
+   This is a P5 thing, not available in Java.
 
-Does it matter? Do we get a proper threaded class either way?
+   Does it matter? Do we get a proper threaded class either way?
 
 
  */
@@ -99,7 +99,7 @@ class ThreadedMidiSend extends Thread {
       print( " " + s );
     }
   }
- 
+
   public void run() {
     /*
 http://creativecomputing.cc/p5libs/promidi/index.htm    
@@ -112,7 +112,7 @@ instead you create notes with a length, the notes are buffered and proMIDI autom
       try {
         midiOut.sendNote(new Note( int(trim(messageParts[1])), int(trim(messageParts[2])), int(trim(messageParts[3])) ));
       } catch ( java.util.ConcurrentModificationException eee) {
-         println("Caught java.util.ConcurrentModificationException sending note.");
+        println("Caught java.util.ConcurrentModificationException sending note.");
       }
       return;
     }

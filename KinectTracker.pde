@@ -1,6 +1,5 @@
 import SimpleOpenNI.*;
 
-
 int offset;
 int pixel;
 int rawDepth;
@@ -49,9 +48,6 @@ class KinectTracker {
    *
    **********************************************************************************************/
   PImage display() {
-
-    println("Kinect display ...");
-
     PImage newImage = createImage(kinectFrameW, kinectFrameH, RGB);
     // Get the raw depth as array of integers
     depth = kinect.depthMap();
@@ -63,24 +59,16 @@ class KinectTracker {
     int pix = 0;
     for (int x = 0; x < kinectFrameW; x++) {
       for (int y = 0; y < kinectFrameH; y++) {
-        //offset = kinectFrameW-x-1+y*kinectFrameW;
-        //        offset = kinectFrameW-x-1+y*kinectFrameW;
         pixel = x+y*display.width;
-        //rawDepth = depth[offset];
-
 
         pix = x+y*kinectFrameW;
         rawDepth = depth[pix];
-        //println("rawDepth: " + rawDepth);
         if ( (rawDepth < depthThreshold) && (rawDepth > depthThreshold - detectionZoneSize ) ) {
           display.pixels[pix] = color(0, 255, 0);
         }
         else {
-          display.pixels[pix] = color(0); // img.pixels[offset];
+          display.pixels[pix] = color(0); 
         }
-        //        sum += (pixels[y*kinectFrameW+x] >> shiftColorInt)  & 0xFF;
-        // flip.pixels[offset] = depthImg.pixels[y*kinectFrameW+x];
-
         flip.pixels[pix] = depthImg.pixels[y*kinectFrameW+x];
       }
     }
@@ -89,14 +77,6 @@ class KinectTracker {
     flip.updatePixels();
     image(display, 0, 0);
 
-    //    image(newImage, BLOB_SCREEN_WIDTH, 0);
-    // We already HAVE this image, so just use it.
-
-
-    //     image(img, BLOB_SCREEN_WIDTH, 0);
-    //  newImage = kinect.irImage(); // createImage(BLOB_SCREEN_WIDTH, MAIN_HEIGHT, RGB);
-
-    //    image(newImage, kinectFrameW, 0);
     return display;
   }
 

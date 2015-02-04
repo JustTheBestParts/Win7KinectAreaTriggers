@@ -22,12 +22,15 @@ class OscManager {
     oscP5 = new OscP5(this, config.getInt("oscListeningPort"));
     oscServer = new NetAddress(config.getString("oscServerIP"), config.getInt("oscServerPort"));
     onOffDelay = config.getInt("onOffDelay");
+    sendOSC = config.getBoolean("sendOSC");
   }
 
   public void sendRenoiseNote(int note){
-    ts = new ThreadedOscSend(oscP5, oscServer);
-    ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
-    new Thread(ts).start();
+    if (sendOSC) { 
+      ts = new ThreadedOscSend(oscP5, oscServer);
+      ts.setMessageData(note, renoiseTrack, renoiseInstr, onOffDelay);
+      new Thread(ts).start();
+    }
   }
 
 
@@ -42,6 +45,7 @@ class ThreadedOscSend extends Thread {
   OscMessage noteOffMsg;
   NetAddress remoteoscServer;
   OscP5 oscP5;
+  boolean sendOSC = true;
 
   int note;
   int track;

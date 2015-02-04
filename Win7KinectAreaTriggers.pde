@@ -46,20 +46,20 @@
 
  A goal of the sketch is provide a useful example that is not too hard to change.
 
-There is a class that exists to hold methods meant to respond to changes in data.
+ There is a class that exists to hold methods meant to respond to changes in data.
 
-The idea is that a user with minimal coding experience need only add/edit specific
-functions that use predefined values.
+ The idea is that a user with minimal coding experience need only add/edit specific
+ functions that use predefined values.
 
-It's less than ideal because the class has other stuff in there.  
+ It's less than ideal because the class has other stuff in there.  
 
-Why not just skip the class and have just the methods?  Why not have just one method?
+ Why not just skip the class and have just the methods?  Why not have just one method?
 
-Put the one method in a separate file, for just that method. No need for clever method
-finding.
+ Put the one method in a separate file, for just that method. No need for clever method
+ finding.
 
-As it is, the Action methods still need to check for conditions.  The advantage to
-having multiple methods is to break things up.  Is that really any better?
+ As it is, the Action methods still need to check for conditions.  The advantage to
+ having multiple methods is to break things up.  Is that really any better?
 
 
 
@@ -69,10 +69,10 @@ having multiple methods is to break things up.  Is that really any better?
 
  james@neurogami.com
 
- Released under the MIT License
+Released under the MIT License
 
 
- ******************************************************************* */
+******************************************************************* */
 
 
 import java.lang.reflect.InvocationTargetException;
@@ -98,7 +98,6 @@ OscManager osc;
 
 
 
-KinectActionSet kas;
 boolean sendOSC  = true;
 boolean sendMIDI = true;
 
@@ -119,10 +118,10 @@ int hd = kinectFrameH/6;
 int defaultTargetW = wd*2;
 int defaultTargetH = hd*2;
 
-int[] t1= { 0,    0,        defaultTargetW, defaultTargetH};
-int[] t2 = {0,    hd*4,     defaultTargetW, defaultTargetH};
-int[] t3 = {wd*4, 0,        defaultTargetW, defaultTargetH};
-int[] t4 = {wd*4, hd*4,     defaultTargetW, defaultTargetH};
+int[] t1 = {0,    0,    defaultTargetW, defaultTargetH};
+int[] t2 = {0,    hd*4, defaultTargetW, defaultTargetH};
+int[] t3 = {wd*4, 0,    defaultTargetW, defaultTargetH};
+int[] t4 = {wd*4, hd*4, defaultTargetW, defaultTargetH};
 
 
 int zoneSum1; 
@@ -140,74 +139,15 @@ void setup() {
   config = new Configgy("config.jsi");
 
   sendMIDI = config.getBoolean("sendMIDI");
-  sendOSC = config.getBoolean("sendOSC");
-
-  if (sendOSC) {
-    osc = new OscManager(config);
-  }
+  sendOSC  = config.getBoolean("sendOSC");
+  
+  osc  = new OscManager(config);
+  midi = new MidiManager(this, config);
 
   trackerZoneSizeDelta = config.getInt("trackerZoneSizeDelta");
   trackerThreshholdDelta = config.getInt("trackerThreshholdDelta");
 
-  if (sendMIDI) {
-    midi = new MidiManager(this, config);
-  }
-
-
-
-  kas = new KinectActionSet();
-  actionMethods = kas.myActionMethods();
-
 }
-
-
-/***************************************************************/
-// The values passed in are the same as used to draw the target rectangles
-// These are the pper-right corner then the width and height, so
-// we need to calc the proper range for x and y
-int getRectColorSum( int x1, int y1, int tW, int tH, int shiftColorInt) {
-  int sum = 0;
-
-  for(int x = x1;  x < (x1+tW); x++){
-    for(int y = y1; y < (y1+tH); y++) {
-      sum += (pixels[y*width+x] >> shiftColorInt)  & 0xFF;
-    }
-  }
-  return sum;
-}
-
-/***************************************************************/
-int getRectColorSum2( int[] coords, int shiftColorInt ) {
-  return getRectColorSum( coords[0], coords[1], coords[2], coords[3], shiftColorInt);
-}
-
-/***************************************************************/
-void drawTarget(int x1, int y1, int x2, int y2, color c) {
-  noFill();
-  rect(x1, y1, x2, y2);
-}
-
-/***************************************************************/
-void drawTarget2(int[] coords, color c) {  
-  drawTarget(coords[0],coords[1], coords[2], coords[3], c);
-}
-
-/***************************************************************/
-void drawTargets(){
-
-  // Top left 
-  drawTarget2(t1, col);
-
-  // Bottom left
-  drawTarget2(t2, col);
-
-  // Top right 
-  drawTarget2( t3, col);
-
-  // Bottom right is   
-  drawTarget2( t4, col);
-}
-
 
 
 /***************************************************************/
@@ -219,20 +159,7 @@ void draw() {
   drawTargets();
   checkTargets();
 
-  for (int i = actionMethods.size() - 1; i >= 0; i--) {
-    Method m = actionMethods.get(i);
-    try {
-      // http://docs.oracle.com/javase/tutorial/reflect/member/methodInvocation.html
-      m.invoke(kas); 
-    } catch (IllegalAccessException iae ) {
-      println( "IllegalAccessException error: " + iae);
-
-    } catch (InvocationTargetException ite) {
-      println("InvocationTargetException error: " + ite);
-    }
-  }
-
-  foo();
+  handleEvents();
 
   image(tracker.flip, kinectFrameW+1, 0);
   drawGrid();
@@ -241,15 +168,61 @@ void draw() {
 }
 
 
+
+/***************************************************************/
+// The values passed in are the same as used to draw the target rectangles
+// These are the upper-right corner then the width and height, so
+// we need to calc the proper range for x and y
+int getRectColorSum( int[] coords, int shiftColorInt ) {
+
+  int sum = 0;
+  int x1 = coords[0];
+  int y1 = coords[1];
+  int tW = coords[2];
+  int tH = coords[3]; 
+  for(int x = x1;  x < (x1+tW); x++){
+    for(int y = y1; y < (y1+tH); y++) {
+      sum += (pixels[y*width+x] >> shiftColorInt)  & 0xFF;
+    }
+  }
+  return sum;
+}
+
+/***************************************************************/
+void drawTarget(int[] coords, color c) {  
+  noFill();
+  rect(coords[0],coords[1], coords[2], coords[3]);
+}
+
+/***************************************************************/
+void drawTargets(){
+
+  // Top left 
+  drawTarget(t1, col);
+
+  // Bottom left
+  drawTarget(t2, col);
+
+  // Top right 
+  drawTarget( t3, col);
+
+  // Bottom right is   
+  drawTarget( t4, col);
+}
+
 /***************************************************************/
 void checkTargets(){
   loadPixels();
-  zoneSum1 = getRectColorSum2(t1, shiftColorGreen);
-  zoneSum2 = getRectColorSum2(t2, shiftColorGreen);
-  zoneSum3 = getRectColorSum2( t3, shiftColorGreen);
-  zoneSum4 = getRectColorSum2( t4, shiftColorGreen);
+  zoneSum1 = getRectColorSum(t1, shiftColorGreen);
+  zoneSum2 = getRectColorSum(t2, shiftColorGreen);
+  zoneSum3 = getRectColorSum( t3, shiftColorGreen);
+  zoneSum4 = getRectColorSum( t4, shiftColorGreen);
 }
 
+/***************************************************************/
+boolean haveTriggeredZone1() {
+  return zoneSum4 > depthThreshold;
+}
 
 /***************************************************************/
 void keyPressed() {
