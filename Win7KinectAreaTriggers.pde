@@ -145,10 +145,10 @@ int hd = kinectFrameH/6;
 int defaultTargetW = wd*2;
 int defaultTargetH = hd*2;
 
-int[] t1 = {0,    0,    defaultTargetW, defaultTargetH};
-int[] t2 = {0,    hd*4, defaultTargetW, defaultTargetH};
-int[] t3 = {wd*4, 0,    defaultTargetW, defaultTargetH};
-int[] t4 = {wd*4, hd*4, defaultTargetW, defaultTargetH};
+int[] t1 = {0,    0,    defaultTargetW, defaultTargetH}; // Upper left 
+int[] t2 = {0,    hd*4, defaultTargetW, defaultTargetH}; // Upper right
+int[] t3 = {wd*4, 0,    defaultTargetW, defaultTargetH}; // Lower left
+int[] t4 = {wd*4, hd*4, defaultTargetW, defaultTargetH}; // Lower right
 
 
 int zoneSum1; 
