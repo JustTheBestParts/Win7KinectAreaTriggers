@@ -50,8 +50,15 @@ class KinectTracker {
   PImage display() {
     PImage newImage = createImage(kinectFrameW, kinectFrameH, RGB);
     // Get the raw depth as array of integers
-    depth = kinect.depthMap();
 
+
+    try {
+    depth = kinect.depthMap();
+     } catch(  NullPointerException npe ) {
+       println("There's a problem. kinect.depthMap() is null.");
+       exit();
+     }
+    
     depthImg = kinect.depthImage();
 
     if (depth == null ) return(depthImg);

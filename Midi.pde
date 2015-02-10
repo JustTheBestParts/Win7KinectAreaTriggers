@@ -1,6 +1,6 @@
 
 // http://creativecomputing.cc/p5libs/promidi/
-//
+
 import promidi.*;
 
 class MidiManager {
@@ -9,7 +9,6 @@ class MidiManager {
 
   MidiOut controllerMidiOut;
   Note note;
-
 
   boolean sendMIDI = true;
 
@@ -38,15 +37,34 @@ class MidiManager {
   }
 
   /***************************************************************/
-  void sendMidiNote(int note) {
+  void sendMidiNote(int note, int velocity, int duration) {
     if (sendMIDI ) {
       ThreadedMidiSend _tms = new ThreadedMidiSend(midiOut);
-      _tms.setMessageData("N," + note + ",127,5000");
-      new Thread( _tms ).start();
-      // Need to watch how this effects memory usage.
-      // _tms should be destroyed when it all falls out of scope. 
+      _tms.setMessageData("N," + note + "," + velocity + "," + duration);
+      try {
+        new Thread( _tms ).start();
+      } catch ( java.util.ConcurrentModificationException eee) {
+        println("Threaded MIDI had a  java.util.ConcurrentModificationException ");
+      }
     }
   }
+
+  /***************************************************************/
+  void sendMidiCC(int controller, int value ) {
+    if (sendMIDI ) {
+      ThreadedMidiSend _tms = new ThreadedMidiSend(midiOut);
+      _tms.setMessageData("C," + controller + "," + controller + "," + value);
+      try {
+        new Thread( _tms ).start();
+        // Need to watch how this effects memory usage.
+        // _tms should be destroyed when it all falls out of scope. 
+      } catch ( java.util.ConcurrentModificationException eee) {
+        println("Threaded MIDI had a  java.util.ConcurrentModificationException ");
+
+      }
+    }
+  }
+
 
   /***************************************************************/
   void clear() {
@@ -86,21 +104,24 @@ class ThreadedMidiSend extends Thread {
   String[] messageParts;
   MidiOut midiOut;
 
+  /***************************************************************/
   // See if these server things are not available as global stuff thanks to the main sketch
   public ThreadedMidiSend(MidiOut midiOut){
-    this. midiOut = midiOut;
+    this.midiOut = midiOut;
   }
 
+  /***************************************************************/
   public void setMessageData(String midiString) {
     messageParts = split(midiString, ",");
-    println("midiString " + midiString );
     command = trim(messageParts[0]);
-    for( String s : messageParts) {
-      print( " " + s );
-    }
   }
 
-  public void run() {
+  // Would it make more sense to have seperate threaded classes
+  // for each of the kinds of MIDI messages?
+  // Probably.  The "Use a string to encode different things"
+  // is cleverish but maybe not the best idea.
+  /***************************************************************/
+  public synchronized void run() {
     /*
 http://creativecomputing.cc/p5libs/promidi/index.htm    
 There are a lot of changes in the new proMIDI version so you have a new plug method, where you can directly 
@@ -108,17 +129,16 @@ plug method that handle the incoming midi data. You no longer need to take care 
 instead you create notes with a length, the notes are buffered and proMIDI automatically send the note off. 
      */
     if (command.equals("N") ) {
-      println("\nPlay note " + messageParts[1] ); // DEBUG
+      // println("\nPlay note " + messageParts[1] ); // DEBUG
       try {
         midiOut.sendNote(new Note( int(trim(messageParts[1])), int(trim(messageParts[2])), int(trim(messageParts[3])) ));
       } catch ( java.util.ConcurrentModificationException eee) {
         println("Caught java.util.ConcurrentModificationException sending note.");
-      }
+      } 
       return;
     }
 
     if (command.equals("PC") ) {
-      //midiOut.sendProgramChange( new ProgramChange( int(trim(messageParts[1])), int(trim(messageParts[2])) ) );
       midiOut.sendProgramChange( new ProgramChange( int(trim(messageParts[1])) ) );
       return;
     }
@@ -132,4 +152,22 @@ instead you create notes with a length, the notes are buffered and proMIDI autom
   }
 }
 
+// Some helper methods so that people who just messing about in Core can more easily send MIDI stuff
+/***************************************************************/
+void sendMidiNote(int note, int velocity, int duration ) {
+  midi.sendMidiNote(note, velocity, duration); 
+}
 
+/***************************************************************/
+void sendMidiNote(int note) {
+  midi.sendMidiNote(note, 127, 2000);
+}
+
+/***************************************************************/
+void sendMidiCC(int controller, int value) {
+  midi.sendMidiCC(controller, value);
+}
+
+// void sendMidiSysex(String sysexText ) {
+// midi.sendMidiSysex(sysexText)
+// }

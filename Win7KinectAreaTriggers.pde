@@ -89,9 +89,6 @@ from other people, some good some bad.  Keep an open mind, adapt as needed, but 
 follow what others do.  Code on purpose.
 
 
-
-
-
  Copyright James Britt / Neurogami 
 
  james@neurogami.com
@@ -191,7 +188,7 @@ void draw() {
 
   image(tracker.flip, kinectFrameW+1, 0);
   drawGrid();
-  println("Zone: " + tracker.getZone() + "; " ); 
+  // println("Zone: " + tracker.getZone() + "; " ); 
   frame.setTitle(" " + int(frameRate ) + " ");
 }
 
@@ -242,13 +239,11 @@ void checkTargets(){
   zoneSum4 = getRectColorSum(t4, shiftColorGreen);
 }
 
-
 /***************************************************************/
 boolean haveTriggeredZone1() { return (zoneSum1 > depthThreshold); }
 boolean haveTriggeredZone2() { return (zoneSum2 > depthThreshold); }
 boolean haveTriggeredZone3() { return (zoneSum3 > depthThreshold); }
 boolean haveTriggeredZone4() { return (zoneSum4 > depthThreshold); }
-
 
 /***************************************************************/
 void keyPressed() {
